@@ -75,15 +75,14 @@ D-1 과 같은 장치를 쓴다. 아래 3절에 함께 적는다.
 > 플랫폼 내부의 Event Publication Registry 는 **CakeShop → P1 구간을 복구하지 못한다.**
 > 그 구간은 CakeShop 쪽 책임이다.
 
-### D-3. 공통 필드의 타입 — 전원, 0-A 연장
+### D-3. 공통 필드의 타입 — **확정** (2026-10-16)
 
-| 필드 | 후보 | 비고 |
-|---|---|---|
-| `eventId` | `String` (UUID 문자열) | CakeShop 이 생성. 전역 유일 |
-| `tenantId` | `String` | 연동 인증에서 도출한다. **요청 본문의 값을 믿지 않는다** |
-| `occurredAt` | `Instant` (UTC) | 화면에서만 KST 로 바꾼다 |
-| 금액 | `long` | 원 단위 정수 |
-| `schemaVersion` | `int` | |
+[공통 필드](common-fields.md) 로 옮겼다. 일곱 개 계약 전부가 쓰는 규칙이라
+C-01 안에 두면 다른 담당자가 찾지 못한다.
+
+요약하면 `eventId`·`tenantId` 는 `String`, `occurredAt` 은 `Instant`(UTC),
+금액은 `long`(원 단위 정수)이고 이름은 **`...Amount`** 다. `price` 는 단가를
+뜻하므로 쓰지 않는다.
 
 ---
 
@@ -192,7 +191,7 @@ IP 를 지역 이름으로 바꾸려면 GeoIP 데이터베이스가 필요하다
 
 - [x] **D-1**(로그인 신호 확보) — A 안 채택
 - [x] **D-2**(전송 신뢰성) — Outbox 채택
-- [ ] **D-3**(공통 필드 타입) — 전원
+- [x] **D-3**(공통 필드 타입) — [공통 필드](common-fields.md) 로 확정
 - [ ] 로그인 실패 시 식별자를 그대로 보낼지 해시로 보낼지 — P1 · P2 (3.5)
 - [ ] CakeShop 에 `outbound_event` 테이블과 리스너·전송 작업 구현 — P1
 - [ ] HTTP 경로 · 요청/응답 필드 · 인증 헤더를 이 문서에 추가한다

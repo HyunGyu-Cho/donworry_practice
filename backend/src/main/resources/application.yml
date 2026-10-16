@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: platform
+
+  datasource:
+    # 포트 기본값이 5433 이다. docker-compose.yml 의 주석 참고.
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:platform}
+    username: ${DB_USERNAME:platform}
+    password: ${DB_PASSWORD:platform}
+
+  jpa:
+    hibernate:
+      # 스키마를 건드리는 도구는 Flyway 하나뿐이다.
+      # update 로 두면 Hibernate 가 Flyway 모르게 테이블을 만들고,
+      # flyway_schema_history 와 실제 스키마가 어긋난다(T-15).
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+    clean-disabled: true
+    # 파일명의 타임스탬프는 '만든 시각'이라 머지 순서와 다를 수 있다.
+    # 늦게 머지된 낮은 버전도 받아들이지 않으면 validate 가 실패한다.
+    out-of-order: true
+
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          # Registry 기술 테이블도 Flyway 가 만든다. 켜 두면 만드는 주체가 둘이 된다.
+          enabled: false
+
+logging:
+  level:
+    org.springframework.modulith: INFO

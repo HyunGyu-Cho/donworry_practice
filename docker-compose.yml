@@ -1,0 +1,26 @@
+# 각자 PC 에 DB 를 따로 설치하지 않고 같은 조건으로 띄우기 위한 설정.
+#   docker compose up -d
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: platform-postgres
+    environment:
+      POSTGRES_DB: platform
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: platform
+      TZ: UTC
+    ports:
+      # 호스트 기본 포트를 5433 으로 비켜 둔다. PC 에 PostgreSQL 을 이미 설치해 둔
+      # 팀원이 있으면 5432 가 겹쳐, 앱이 컨테이너가 아니라 로컬 DB 에 붙어 버린다.
+      # 그쪽에는 platform 계정이 없어 "password 인증 실패"로만 보이고 원인을 찾기 어렵다.
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - platform-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform -d platform"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  platform-pgdata:

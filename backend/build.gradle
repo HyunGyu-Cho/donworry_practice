@@ -1,0 +1,136 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.1'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.diffplug.spotless' version '7.0.2'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+}
+
+repositories { mavenCentral() }
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.modulith:spring-modulith-bom:2.1.1'
+    }
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // 스키마는 Flyway 하나만 건드린다. ddl-auto 는 validate 로 막아 둔다.
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // 모듈 경계 검사 + 내부 비동기 이벤트의 처리 기록(Event Publication Registry)
+    //
+    // Registry 는 JDBC 방식이다(ADR-008). 업무 코드는 JPA 를 쓰지만 Registry 만 JDBC 다.
+    // JPA 방식을 쓰면 테이블을 Hibernate 가 만들게 되는데, 스키마는 Flyway 하나만
+    // 건드린다는 결정과 충돌한다. JDBC 방식은 schema-postgresql.sql 을 제공하므로
+    // 그 내용을 그대로 Flyway 마이그레이션에 넣을 수 있다.
+    implementation 'org.springframework.modulith:spring-modulith-starter-core'
+    implementation 'org.springframework.modulith:spring-modulith-starter-jdbc'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    // 탐지된 모듈 구조를 눈으로 확인할 수 있게 테스트의 표준 출력을 보여 준다.
+    testLogging {
+        showStandardStreams = true
+        events 'passed', 'failed', 'skipped'
+    }
+}
+
+// 파일 끝 개행과 공백만 맞춘다. 포매터를 내려받지 않아 첫 빌드가 느려지지 않는다.
+spotless {
+    java {
+        target 'src/**/*.java'
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 마이그레이션 파일명을 사람이 정하면 여러 브랜치에서 같은 버전이 나온다.
+// 버전은 생성 시각으로 찍고, 개발자는 설명만 넘긴다.
+//   gradlew newMigration -Pdesc=risk_add_alert_table
+// cakeshop 의 동일 태스크를 가져왔고, 모듈 소유자 검사만 추가했다.
+// ---------------------------------------------------------------------------
+tasks.register('newMigration') {
+    group = 'platform'
+    description = '타임스탬프 규칙에 맞는 빈 Flyway migration 파일을 만든다. 예: -Pdesc=risk_add_alert_table'
+
+    def migrationDir = layout.projectDirectory.dir('src/main/resources/db/migration').asFile
+    def projectDir = layout.projectDirectory.asFile
+    def descProvider = providers.gradleProperty('desc')
+
+    doLast {
+        def modules = ['identity', 'integration', 'risk', 'investigation',
+                       'settlement', 'cashflow', 'registry'] as Set
+
+        def desc = descProvider.getOrNull()
+        // Windows 콘솔 코드페이지에 따라 한글이 깨질 수 있어 실행에 필요한 정보는 ASCII 로 적는다.
+        if (!desc?.trim()) {
+            throw new GradleException(
+                    'usage: gradlew newMigration -Pdesc=<module>_<snake_case>\n' +
+                    '  e.g. gradlew newMigration -Pdesc=risk_add_alert_table'
+            )
+        }
+        if (!(desc ==~ /[a-z0-9]+(_[a-z0-9]+)*/)) {
+            throw new GradleException(
+                    "-Pdesc must be lower snake_case, but was '${desc}'\n" +
+                    '  e.g. risk_add_alert_table, cashflow_add_expense'
+            )
+        }
+        // 6명이 한 DB 를 쓴다. 파일 목록만 봐도 주인이 보이게 모듈명으로 시작하게 한다.
+        def owner = desc.split('_')[0]
+        if (!(owner in modules)) {
+            throw new GradleException(
+                    "-Pdesc must start with a module name: ${modules.sort().join(', ')}\n" +
+                    "  but was '${owner}'\n" +
+                    '  e.g. risk_add_alert_table'
+            )
+        }
+
+        def formatter = java.time.format.DateTimeFormatter.ofPattern('yyyyMMdd_HHmmss')
+        def existing = (migrationDir.listFiles() ?: new File[0])*.name
+        def stamp = java.time.LocalDateTime.now()
+        // 같은 초에 만들어진 마이그레이션이 이미 있으면 버전이 겹친다.
+        // 설명이 달라도 Flyway 버전은 같으므로 파일명 전체가 아니라 버전 접두어로 확인한다.
+        while (existing.any { it.startsWith('V' + stamp.format(formatter) + '__') }) {
+            stamp = stamp.plusSeconds(1)
+        }
+
+        def target = new File(migrationDir, "V${stamp.format(formatter)}__${desc}.sql")
+        migrationDir.mkdirs()
+        target.setText("""\
+-- ${desc}
+-- 생성: ${stamp.format(java.time.format.DateTimeFormatter.ofPattern('yyyy-MM-dd HH:mm:ss'))}
+--
+-- 규칙
+-- * 이 파일은 공유된 뒤 수정하지 않는다. 변경이 필요하면 새 migration 을 만든다.
+-- * 한 migration 은 하나의 배포 가능한 스키마 전환을 담는다. SQL 수만으로 나누거나 합치지 않는다.
+-- * PostgreSQL 은 DDL 이 트랜잭션 안에서 돌아, 실패하면 이 파일 전체가 롤백된다.
+
+""", 'UTF-8')
+
+        println "created: ${projectDir.toPath().relativize(target.toPath()).toString().replace('\\', '/')}"
+    }
+}

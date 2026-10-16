@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # 모듈 경계(Spring Modulith)와 흐름 분리(ArchUnit) 검사가 여기 포함된다.
+      # DB 가 필요 없는 구조 테스트라 컨테이너 없이 돈다.
+      - name: Build and test
+        run: ./gradlew --no-daemon spotlessCheck test

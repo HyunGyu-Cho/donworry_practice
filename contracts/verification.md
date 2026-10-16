@@ -1,7 +1,7 @@
 # T-01 ~ T-15 — 검증 항목
 
 > **T-xx 란** 무엇이 통과해야 완성인지 정한 **합격 기준**(Test)이다.
-> 번호 체계는 [계약 지도](../README.md#번호가-무슨-뜻인가) 참고.
+> 번호 체계는 [계약 지도](README.md#번호가-무슨-뜻인가) 참고.
 
 **항목을 적은 것과 통과한 것은 다르다.** 실제 실행 결과가 있어야 검증 완료다.
 각 항목은 **실행 조건**과 **기대 결과**로 나뉜다.
@@ -37,7 +37,7 @@
 - 중복 수신은 기존 이벤트를 재사용한다.
 - 같은 ID 에 다른 내용은 **충돌로 거절**하고 기존 데이터를 덮어쓰지 않는다.
 
-관련 계약: [C-01](../C-01-cakeshop-event.md) · [C-02](../C-02-event-distribution.md)
+관련 계약: [C-01](C-01-cakeshop-event.md) · [C-02](C-02-event-distribution.md)
 
 ## T-02. P2 와 P5 의 업무 독립성 — P1 · P2 · P5
 
@@ -53,7 +53,7 @@
 - P2 처리만 재시도 대상이 되고 복구 후 정상 처리된다.
 - 성공한 P5 결과는 재전송·재시도 후에도 **중복 반영되지 않는다.**
 
-관련 계약: [C-02](../C-02-event-distribution.md)
+관련 계약: [C-02](C-02-event-distribution.md)
 
 ## T-03. Case 생성 기준 — P2 · P3
 
@@ -73,7 +73,7 @@
 - Case 가 없는 LOW·단독 MEDIUM 을 **"생성 중"으로 표시하지 않는다.**
 - **서로 다른 고객사의 같은 회원 ID 는 같은 Case 로 합쳐지지 않는다.**
 
-관련 계약: [C-03](../C-03-alert-to-case.md)
+관련 계약: [C-03](C-03-alert-to-case.md)
 
 ## T-04. AI 자동 시작과 수동 시작 — P3 · P4
 
@@ -88,7 +88,7 @@
 - 직원의 수동 요청에만 별도 Job 이 생성된다.
 - **Job 접수와 보고서 생성 완료가 화면에서 별도 상태로** 표시된다.
 
-관련 계약: [C-03](../C-03-alert-to-case.md) · [C-04](../C-04-ai-job-intake.md)
+관련 계약: [C-03](C-03-alert-to-case.md) · [C-04](C-04-ai-job-intake.md)
 
 ## T-05. Case 생성 동시성 — P2 · P3
 
@@ -105,7 +105,7 @@
 - Case 생성 · 경보 연결 · 자동 AI Job 저장 중 **일부만 성공한 상태가 남지 않는다.**
 - 재처리해도 불필요한 Case 나 최초 자동 AI Job 이 중복 생성되지 않는다.
 
-관련 계약: [C-03](../C-03-alert-to-case.md)
+관련 계약: [C-03](C-03-alert-to-case.md)
 
 ## T-06. AI 중복·장애 복구 — P3 · P4
 
@@ -122,7 +122,7 @@
 - 저장되지 않은 보고서를 성공으로 표시하지 않는다.
 - **실제 LLM 호출·과금까지 "정확히 한 번"을 보장한다고 주장하지 않는다.**
 
-관련 계약: [C-04](../C-04-ai-job-intake.md) · [C-05](../C-05-ai-status-callback.md)
+관련 계약: [C-04](C-04-ai-job-intake.md) · [C-05](C-05-ai-status-callback.md)
 
 ## T-07. 고객사별 접근 및 증거 격리 — P1 · P2 · P3 · P4
 
@@ -136,7 +136,7 @@
 - **DB 와 애플리케이션 권한 양쪽에서** 다른 고객사 참조가 막힌다.
 - AI 보고서에 허용되지 않은 **원본 개인정보가 포함되지 않는다.**
 
-관련 계약: [C-04A](../C-04A-evidence-query.md) · [공통 필드](../common-fields.md) 의 `tenantId`
+관련 계약: [C-04A](C-04A-evidence-query.md) · [공통 필드](common-fields.md) 의 `tenantId`
 
 ## T-08. 직원 판정·고객사 조치 — P3
 
@@ -194,7 +194,7 @@
 - 선택한 P5 예상 순정산액만 반영된다.
 - 입력값을 바꾸면 예상 잔액·부족 경고가 일관되게 갱신된다.
 
-관련 계약: [C-07](../C-07-expected-settlement-query.md)
+관련 계약: [C-07](C-07-expected-settlement-query.md)
 
 ## T-12. 정산 조회 실패와 이중 계산 방지 — P5 · P6
 
@@ -208,7 +208,7 @@
 - P6 가 수수료·취소를 **다시 차감하지 않는다.**
 - Mock 입금을 예상 정산액에 중복으로 더하지 않는다.
 
-관련 계약: [C-07](../C-07-expected-settlement-query.md) — `resultStatus` 세 상태가 이것 때문에 있다
+관련 계약: [C-07](C-07-expected-settlement-query.md) — `resultStatus` 세 상태가 이것 때문에 있다
 
 ---
 
@@ -246,7 +246,7 @@
 - CakeShop 의 기존 핵심 거래 흐름이 **신규 플랫폼 응답을 기다리며 차단되지 않는다.**
 - 실패한 이벤트 전달은 복구 정책에 따라 재전송할 수 있다.
 
-> 이것이 [C-01](../C-01-cakeshop-event.md) 에서 **기록과 전송을 분리**한 이유다.
+> 이것이 [C-01](C-01-cakeshop-event.md) 에서 **기록과 전송을 분리**한 이유다.
 > 로그인 리스너는 INSERT 만 하고, HTTP 전송은 별도 작업이 맡는다.
 
 ## T-15. Spring Modulith·스키마 변경 회귀 — 전원
@@ -269,7 +269,7 @@
 - Registry 기술 테이블은 업무 테이블과 **별도로** 검증한다.
 
 > 1 번과 2 번의 일부는 이미 저장소에 있다 — `ModularityTests`(모듈 경계),
-> `FlowSeparationTests`(보안·자금 흐름 분리). 5 번은 [공통 필드](../common-fields.md) 와
+> `FlowSeparationTests`(보안·자금 흐름 분리). 5 번은 [공통 필드](common-fields.md) 와
 > 짝이다.
 
 ---

@@ -86,3 +86,4 @@ src/main/resources/db/migration/V20261016_104659__risk_add_alert_table.sql
 - [contracts/README.md](contracts/README.md) — 계약 지도
 - [contracts/common-fields.md](contracts/common-fields.md) — 공통 필드의 이름과 타입
 - [contracts/tests/README.md](contracts/tests/README.md) — 검증 항목 T-01~T-15
+- [contracts/detection-rules.md](contracts/detection-rules.md) — 탐지 규칙을 만드는 틀

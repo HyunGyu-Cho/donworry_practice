@@ -6,63 +6,50 @@
   AI 가 증거 보고서를 쓰고, **사람이 최종 판정**한다.
 - **자금** — 시작 자금과 예정 지출로 날짜별 예상 잔액과 부족 시점을 보여준다.
 
-## 구성
+Spring Boot 단일 앱(업무 모듈 6개) + FastAPI AI 서버 + React 화면.
+CakeShop 은 [별도 저장소](https://github.com/team-sweethan/cakeshop)의 별도 앱이고 HTTP 로만 연동한다.
 
-| 폴더 | 내용 |
-|---|---|
-| `backend/` | Spring Boot 실행 앱 1개 + Spring Modulith 업무 모듈 6개 |
-| `frontend/` | React + TypeScript (예정) |
-| `ai-server/` | FastAPI + LangGraph (예정) |
-| `contracts/` | 담당자 간 계약 C-01~C-07 · 공통 필드 · 검증 항목 T-01~T-15 — **정본** |
-| `docs/` | 개발 규칙·Execution Plan (예정) |
-
-CakeShop 은 [별도 저장소](https://github.com/team-sweethan/cakeshop)의 별도 앱이다. HTTP 로만 연동한다.
-
-## 시작하기
+## 빠르게 돌려보기
 
 ```bash
-# 1. DB 띄우기
 docker compose up -d
+```
 
-# 2. 빌드와 검사
+```bash
 cd backend
 ./gradlew spotlessCheck test
 ```
 
-테스트는 DB 없이도 돈다. 모듈 경계 검사는 Spring 컨텍스트를 띄우지 않기 때문이다.
+**테스트는 DB 없이도 돈다.** 모듈 경계 검사는 Spring 컨텍스트를 띄우지 않기 때문이다.
+앱을 띄우려면 컨테이너가 먼저 올라와 있어야 한다 — `./gradlew bootRun`.
+
+## 포트
+
+| | 포트 | |
+|---|---|---|
+| 이쪽 플랫폼 | **8081** | `bootRun` |
+| 플랫폼 DB | **5433** | PostgreSQL 17 컨테이너 (`DB_PORT` 로 변경) |
+| CakeShop | 8080 | 별도 저장소 |
+| CakeShop DB | 3307 | MariaDB, 로컬 설치 |
+
+호스트 5433 을 쓰는 이유는 [AGENTS.md](AGENTS.md) 의 "자주 걸리는 함정" 에 있다.
 
 ## CakeShop 과 함께 띄우기
 
 **개발 대부분은 CakeShop 없이 한다.** 이벤트를 `curl` 로 직접 쏘면 되기 때문이다.
-실제로 CakeShop 을 띄워야 하는 때는 두 번뿐이다 — CakeShop 쪽 전송 코드를 고칠 때와,
-최종 시연 때.
+실제로 띄워야 하는 때는 두 번뿐이다 — CakeShop 쪽 전송 코드를 고칠 때와 최종 시연 때.
+Toss 테스트 키와 메일·S3 설정이 담긴 `.env` 가 필요하다
+([cakeshop 저장소](https://github.com/team-sweethan/cakeshop)의 `.env_sample` 참고).
 
-| | 이쪽 플랫폼 | CakeShop |
-|---|---|---|
-| 포트 | **8081** | 8080 |
-| DB | PostgreSQL 17 (컨테이너, 호스트 **5433**) | MariaDB (로컬 설치, **3307**) |
-| 실행 | `docker compose up -d` 후 `./gradlew bootRun` | `.env` 채우고 `./gradlew bootRun` |
+## 폴더
 
-겹치는 포트가 없도록 양쪽 기본값을 미리 비켜 뒀다. CakeShop 을 띄우려면
-Toss 테스트 키와 메일·S3 설정이 담긴 `.env` 가 필요하다.
-[cakeshop 저장소](https://github.com/team-sweethan/cakeshop)의 `.env_sample` 참고.
-
-## 모듈 경계
-
-| 모듈 | 담당 | 의존 |
-|---|---|---|
-| `identity` | P1 | (없음) |
-| `integration` | P1 | `identity` |
-| `risk` | P2 | `integration::events` |
-| `investigation` | P3 | `risk::events`, `risk`, `integration` |
-| `settlement` | P5 | `integration::events` |
-| `cashflow` | P6 | `settlement` |
-
-**`risk` 와 `settlement` 사이에 선이 없다.** 보안 흐름과 자금 흐름은 독립이고,
-`allowedDependencies` 와 ArchUnit 이 그것을 빌드로 강제한다.
-
-확인해 보려면 `risk` 안에서 `settlement` 타입을 하나 import 하고 테스트를 돌려 보라.
-빨개져야 정상이다.
+| 폴더 | 내용 |
+|---|---|
+| `backend/` | Spring Boot 실행 앱 1개 + Spring Modulith 업무 모듈 6개 |
+| `frontend/` | React + TypeScript (아직 없음) |
+| `ai-server/` | FastAPI + LangGraph (아직 없음) |
+| `contracts/` | 담당자 간 계약 · 공통 필드 · 검증 항목 — **정본** |
+| `docs/` | 작업 계획 쓰는 법과 진행 상황 |
 
 ## DB 변경
 
@@ -81,9 +68,13 @@ src/main/resources/db/migration/V20261016_104659__risk_add_alert_table.sql
 
 ## 더 읽을 것
 
-- [AGENTS.md](AGENTS.md) — 코딩 에이전트와 개발자가 지킬 규칙
-- [ARCHITECTURE.md](ARCHITECTURE.md) — 구조와 접근 경계
-- [contracts/README.md](contracts/README.md) — 계약 지도
-- [contracts/common-fields.md](contracts/common-fields.md) — 공통 필드의 이름과 타입
-- [contracts/tests/README.md](contracts/tests/README.md) — 검증 항목 T-01~T-15
-- [contracts/detection-rules.md](contracts/detection-rules.md) — 탐지 규칙을 만드는 틀
+| 문서 | 내용 |
+|---|---|
+| [AGENTS.md](AGENTS.md) | 코딩 에이전트와 개발자가 지킬 규칙 · 자주 걸리는 함정 |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 모듈 6개 · 의존 방향 · 접근 경계 |
+| [contracts/README.md](contracts/README.md) | 계약 지도 (C-01~C-07) |
+| [contracts/common-fields.md](contracts/common-fields.md) | 공통 필드의 이름과 타입 |
+| [contracts/verification.md](contracts/verification.md) | 합격 기준 T-01~T-15 |
+| [contracts/detection-rules.md](contracts/detection-rules.md) | 탐지 규칙을 만드는 틀 |
+| [docs/PLANS.md](docs/PLANS.md) | 작업 계획 쓰는 법과 세션 복구 |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | **지금 누가 무엇을 하고 있나 · 아직 안 정한 것** |

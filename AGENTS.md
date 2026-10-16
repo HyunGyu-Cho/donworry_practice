@@ -21,16 +21,8 @@
 
 ## 모듈과 소유자
 
-| 모듈 | 담당 | 하는 일 |
-|---|---|---|
-| `identity` | P1 | 고객사·사용자·권한 |
-| `integration` | P1 | CakeShop 이벤트 수신·검증·분배 |
-| `risk` | P2 | 위험 규칙·경보(Alert) |
-| `investigation` | P3 | 사건(Case)·판정·AI Job·증거 게이트 |
-| `settlement` | P5 | 예상 정산·Mock 대사 |
-| `cashflow` | P6 | 시작 자금·예정 지출·잔액 전망 |
-
-P4 는 `ai-server/` 전체를 담당한다.
+모듈 여섯 개의 **담당 · 하는 일 · 의존 선언**은 [ARCHITECTURE.md](ARCHITECTURE.md) 의 표 하나에 있다.
+여기에 다시 적지 않는다. 한쪽만 고치면 충돌한다.
 
 ## 반드시 지킬 것
 
@@ -40,7 +32,7 @@ P4 는 `ai-server/` 전체를 담당한다.
 3. **보안 흐름과 자금 흐름을 섞지 않는다.** `risk`·`investigation` 은 `settlement`·`cashflow` 를
    모르고, 그 반대도 같다. `FlowSeparationTests` 가 검사한다.
 4. **스키마는 Flyway 만 건드린다.** `ddl-auto` 는 `validate` 다. 마이그레이션 파일명은
-   `./gradlew newMigration -Pdesc=<모듈명>_<설명>` 으로 만든다. 직접 짓지 않는다.
+   직접 짓지 않는다. 명령은 README.md 의 "DB 변경" 절에 있다.
 5. **실행하지 않은 테스트를 통과라고 보고하지 않는다.** 테스트를 지우거나
    `continue-on-error` 로 우회하지 않는다.
 6. **공개 계약을 바꾸려면 먼저 보고한다.** `contracts/` 의 C-01~C-07 이다.
@@ -78,10 +70,12 @@ C-xx(계약) · T-xx(테스트) · D-x(결정 대기) · ADR-xxx · FIX-xx 같�
 
 1. 이 문서 → `ARCHITECTURE.md` → `contracts/README.md` 의 계약 지도
    → `contracts/common-fields.md` 의 필드 이름·타입 규칙
-2. 담당 계약(`contracts/C-xx-*.md`)과 검증 항목(`contracts/tests/README.md`) 확인
+2. 담당 계약(`contracts/C-xx-*.md`)과 검증 항목(`contracts/verification.md`) 확인
 3. 이미 구현된 것과 아직 Mock 인 것을 구분
-4. 작업 계획을 `docs/exec-plans/` 에 쓴다. **승인 절차는 없다.** 범위를 적는 것이 목적이다
+4. 작업 계획을 [`docs/PLANS.md`](docs/PLANS.md) 의 규칙대로 `docs/exec-plans/active/` 에 쓴다.
+   **승인 절차는 없다.** 범위를 적는 것이 목적이다
 5. 구현 → 테스트 실행 → 실제 결과를 계획서에 기록 → PR
+6. 세션이 끊겼다 다시 왔다면 계획서의 **Checkpoint** 부터 읽는다. 기억이 아니라 Git 이 기준이다
 
 ## 검사 명령
 

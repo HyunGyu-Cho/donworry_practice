@@ -28,17 +28,23 @@ identity  ◀── integration ◀── risk ◀── investigation
           integration ◀── settlement ◀── cashflow
 ```
 
-| 모듈 | allowedDependencies |
-|---|---|
-| `identity` | (없음) |
-| `integration` | `identity` |
-| `risk` | `integration::events` |
-| `investigation` | `risk::events`, `risk`, `integration` |
-| `settlement` | `integration::events` |
-| `cashflow` | `settlement` |
+| 모듈 | 담당 | 하는 일 | allowedDependencies |
+|---|---|---|---|
+| `identity` | P1 | 고객사·사용자·권한 | (없음) |
+| `integration` | P1 | CakeShop 이벤트 수신·검증·분배 | `identity` |
+| `risk` | P2 | 위험 규칙·경보(Alert) | `integration::events` |
+| `investigation` | P3 | 사건(Case)·판정·AI Job·증거 게이트 | `risk::events`, `risk`, `integration` |
+| `settlement` | P5 | 예상 정산·Mock 대사 | `integration::events` |
+| `cashflow` | P6 | 시작 자금·예정 지출·잔액 전망 | `settlement` |
+
+P4 는 `ai-server/` 전체를 담당한다. 모듈이 아니라 별도 실행 앱이다.
+**담당자 이름은 [docs/ROADMAP.md](docs/ROADMAP.md) 에 있다.** 여기에는 P 번호만 둔다.
 
 선언은 각 모듈의 `package-info.java` 에 있다. **`risk` 와 `settlement` 사이에 선이 없다** —
 보안 흐름과 자금 흐름이 독립이라는 뜻이다.
+
+확인해 보려면 `risk` 안에서 `settlement` 타입을 하나 import 하고 테스트를 돌려 보라.
+빨개져야 정상이다.
 
 ## 통신 방식
 

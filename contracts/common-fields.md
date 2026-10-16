@@ -13,7 +13,8 @@
 
 | 필드 | 타입 | 뜻 | 주의 |
 |---|---|---|---|
-| `eventId` | `String` | 이벤트 하나를 가리키는 전역 유일 ID. UUID 문자열 36자 | **CakeShop 이 만든다.** 플랫폼의 중복 판정 기준이다 |
+| `sourceEventId` | `String` | **CakeShop 이 만든** 전역 유일 ID. UUID 문자열 36자 | 플랫폼의 **중복 판정 기준**이다 |
+| `eventId` | `String` | **플랫폼이 저장한** 이벤트 ID | C-01 의 응답과 C-02 의 내부 이벤트에서 쓴다 |
 | `tenantId` | `String` | 어느 고객사(쇼핑몰) 것인지 | **요청 본문의 값을 믿지 않는다.** 인증 정보에서 도출한다 |
 | `occurredAt` | `Instant` | 그 일이 **실제로 일어난** 시각. UTC 로 저장 | 받은 시각이 아니다. 화면에서만 KST 로 바꾼다 |
 | `schemaVersion` | `int` | 이벤트 모양의 버전. `1` 부터 | 필드를 늘리면 올린다 |
@@ -77,7 +78,7 @@ long expectedAmount;   // 125000  = 125,000원
 
 | 어디서 온 ID | 타입 | 예 |
 |---|---|---|
-| 외부(CakeShop)에서 온 것 | `String` | `subjectExternalId`, `eventId`, `settlementId` |
+| 외부(CakeShop)에서 온 것 | `String` | `subjectExternalId`, `sourceEventId`, `orderExternalId` |
 | 플랫폼이 만든 PK | `Long` | 엔티티 `id` |
 
 CakeShop 의 `orders.id` 는 숫자지만, **플랫폼에서는 문자열로 받는다.**

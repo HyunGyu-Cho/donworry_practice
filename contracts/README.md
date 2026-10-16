@@ -27,13 +27,20 @@
 | 번호 | 내용 | 방향 | 방식 | 검증 |
 |---|---|---|---|---|
 | [C-01](C-01-cakeshop-event.md) | CakeShop 이벤트 수신 | CakeShop → P1 | 외부 HTTP | T-01 · T-14 |
-| C-02 | 업무별 이벤트 분배 | P1 → P2 · P5 | 내부 비동기 + Registry | T-01 · T-02 · T-14 |
-| C-03 | Alert 기반 Case 생성 | P2 → P3 | 내부 비동기 | T-03 · T-04 · T-05 |
-| C-04 | AI 조사 작업 접수 | P3 → P4 | 외부 HTTP | T-04 · T-06 |
-| C-04A | AI 조사 증거 조회 | P4 → Spring Boot | 내부 HTTP | T-07 |
-| C-05 | AI 실행 상태 통지 | P4 → Spring Boot | 내부 HTTP | T-06 |
+| [C-02](C-02-event-distribution.md) | 업무별 이벤트 분배 | P1 → P2 · P5 | 내부 비동기 + Registry | T-01 · T-02 · T-14 |
+| [C-03](C-03-alert-to-case.md) | Alert 기반 Case 생성 | P2 → P3 | 내부 비동기 | T-03 · T-04 · T-05 |
+| [C-04](C-04-ai-job-intake.md) | AI 조사 작업 접수 | P3 → P4 | 외부 HTTP | T-04 · T-06 |
+| [C-04A](C-04A-evidence-query.md) | AI 조사 증거 조회 | P4 → Spring Boot | 내부 HTTP | T-07 |
+| [C-05](C-05-ai-status-callback.md) | AI 실행 상태 통지 | P4 → Spring Boot | 내부 HTTP | T-06 |
 | C-06 | **결번** — 할당된 계약 없음 | — | — | — |
-| C-07 | 예상 정산 유입 조회 | P6 → P5 | 동기 Java API | T-11 · T-12 |
+| [C-07](C-07-expected-settlement-query.md) | 예상 정산 유입 조회 | P6 → P5 | 동기 Java API | T-11 · T-12 |
+
+계약에 딸린 것이 둘 더 있다.
+
+| 문서 | 내용 |
+|---|---|
+| [공통 필드](common-fields.md) | 모든 계약이 쓰는 필드의 이름과 타입 (D-3 확정) |
+| [검증 항목 T-01 ~ T-15](tests/README.md) | 무엇이 통과해야 완성인지 |
 
 > `C-01~C-07` 처럼 범위로 적지 않는다. **C-06 은 결번이다.**
 
@@ -59,9 +66,21 @@
 - [x] **D-3** 공통 필드 타입 — [공통 필드](common-fields.md) 로 확정
 - [ ] 로그인 실패 시 식별자를 그대로 보낼지 해시로 보낼지 — P1 · P2
 
+## Notion 과의 관계
+
+**계약 본문과 검증 항목은 모두 이 폴더로 옮겼다.** Notion 설계서 03 · 04 는
+읽기용 사본이고, 고치는 곳은 여기다. 한쪽만 고치면 충돌한다.
+
+| Notion | 이 폴더 |
+|---|---|
+| 설계서 03-1 (외부 HTTP API) | C-01 · C-04 · C-04A · C-05 |
+| 설계서 03-3 (내부 Java API·이벤트) | C-02 · C-03 · C-07 |
+| 설계서 04 (테스트 및 검증) | [tests/README.md](tests/README.md) |
+
+Notion 에만 남는 것도 있다 — ERD(설계서 02), 화면·업무 흐름(설계서 01),
+미채택 개선안 FIX-01~09(설계서 05), ADR. 계약이 아니라서 옮기지 않았다.
+
 ## 아직 할 일
 
-- [ ] C-02 · C-03 · C-04 · C-04A · C-05 · C-07 본문을 이 폴더에 옮기기
-- [ ] T-01 ~ T-15 를 `contracts/tests/` 에 옮기기
-
-본문이 옮겨지기 전까지는 Notion 의 설계서 03-3 과 04 가 정본이다.
+- [ ] 각 계약의 HTTP 인증 헤더·역할별 허용 권한을 실제 구현과 맞추기
+- [ ] C-07 의 Java 시그니처 고정 — P5 · P6 (해당 문서의 '확인 필요' 참고)

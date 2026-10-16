@@ -13,7 +13,7 @@
 | `backend/` | Spring Boot 실행 앱 1개 + Spring Modulith 업무 모듈 6개 |
 | `frontend/` | React + TypeScript (예정) |
 | `ai-server/` | FastAPI + LangGraph (예정) |
-| `contracts/` | 담당자 간 계약 C-01~C-07 과 검증 항목 — **정본** |
+| `contracts/` | 담당자 간 계약 C-01~C-07 · 공통 필드 · 검증 항목 T-01~T-15 — **정본** |
 | `docs/` | 개발 규칙·Execution Plan (예정) |
 
 CakeShop 은 [별도 저장소](https://github.com/team-sweethan/cakeshop)의 별도 앱이다. HTTP 로만 연동한다.
@@ -84,3 +84,5 @@ src/main/resources/db/migration/V20261016_104659__risk_add_alert_table.sql
 - [AGENTS.md](AGENTS.md) — 코딩 에이전트와 개발자가 지킬 규칙
 - [ARCHITECTURE.md](ARCHITECTURE.md) — 구조와 접근 경계
 - [contracts/README.md](contracts/README.md) — 계약 지도
+- [contracts/common-fields.md](contracts/common-fields.md) — 공통 필드의 이름과 타입
+- [contracts/tests/README.md](contracts/tests/README.md) — 검증 항목 T-01~T-15

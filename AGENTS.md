@@ -78,7 +78,7 @@ C-xx(계약) · T-xx(테스트) · D-x(결정 대기) · ADR-xxx · FIX-xx 같�
 
 1. 이 문서 → `ARCHITECTURE.md` → `contracts/README.md` 의 계약 지도
    → `contracts/common-fields.md` 의 필드 이름·타입 규칙
-2. 담당 계약(C-xx)과 검증 항목(T-xx) 확인
+2. 담당 계약(`contracts/C-xx-*.md`)과 검증 항목(`contracts/tests/README.md`) 확인
 3. 이미 구현된 것과 아직 Mock 인 것을 구분
 4. 작업 계획을 `docs/exec-plans/` 에 쓴다. **승인 절차는 없다.** 범위를 적는 것이 목적이다
 5. 구현 → 테스트 실행 → 실제 결과를 계획서에 기록 → PR

@@ -105,6 +105,7 @@ C-01 안에 두면 다른 담당자가 찾지 못한다.
 outbound_event
   id               BIGINT AUTO_INCREMENT
   event_id         VARCHAR(36)  -- UUID. 전역 유일. 플랫폼의 중복 판정 기준
+                               -- 요청에는 sourceEventId 라는 이름으로 담긴다
   event_type       VARCHAR(50)  -- LOGIN_SUCCEEDED / LOGIN_FAILED / ORDER_CREATED / ...
   payload          JSON
   occurred_at      DATETIME(6)
@@ -177,13 +178,48 @@ IP 를 지역 이름으로 바꾸려면 GeoIP 데이터베이스가 필요하다
 
 ---
 
-## 4. 수신 규칙 — 채택
+## 4. 플랫폼 쪽 수신 — 채택
 
-- P1 이 이벤트 ID · 버전 · 고객사 연결 정보를 검증한 뒤 저장한다.
-- **같은 원천 이벤트가 다시 와도 한 번만 반영한다.**
-- **같은 ID 에 다른 내용이면 충돌로 거절하고 기존 데이터를 덮어쓰지 않는다** (HTTP 409).
-- `tenantId` 는 인증된 연동 정보에서 도출한다. 요청 본문의 값을 그대로 믿지 않는다.
-- 플랫폼 장애가 CakeShop 의 기존 로그인·주문·결제·취소를 막지 않는다.
+**`POST /internal/integrations/events`**
+
+### 4.1 Request
+
+| 필드 | 뜻 |
+|---|---|
+| `sourceEventId` | CakeShop 이 만든 이벤트 고유 ID |
+| `eventType` | 로그인 · 주문 · 결제 · 취소 등 종류 |
+| `schemaVersion` | 이벤트 형식의 버전 |
+| `occurredAt` | **CakeShop 에서 일어난** 시각 |
+| `subjectType` / `subjectExternalId` | 조사 대상의 종류와 원천 ID |
+| `orderExternalId` / `paymentExternalId` | 있을 때만 — 주문 · 결제 원천 ID |
+| `payload` | 허용한 이벤트 상세 값 |
+
+### 4.2 Response
+
+| 필드 | 뜻 |
+|---|---|
+| `eventId` | **플랫폼이** 저장한 이벤트 ID |
+| `ingestStatus` | 저장 완료 / 기존 이벤트 중복 접수 |
+| `receivedAt` | 플랫폼 수신 시각 |
+
+> `sourceEventId`(CakeShop 것)와 `eventId`(플랫폼 것)는 **다른 값**이다.
+> 자세한 구분은 [공통 필드](common-fields.md) 참고.
+
+### 4.3 처리 규칙
+
+- 고객사와 연동 ID 는 **인증된 CakeShop 연동 정보로 결정한다.**
+  요청 본문의 `tenantId` 를 그대로 믿지 않는다.
+- 새 이벤트를 **영속 저장한 뒤** 접수 응답(202)을 반환한다. 같은 원천 ID 로 같은
+  내용이 다시 오면 기존 결과(200)를 반환할 수 있다.
+- **같은 ID 에 다른 내용이면 덮어쓰지 않고 충돌(409)로 처리한다.**
+- **이 응답은 P2 탐지나 P5 정산까지 끝났다는 뜻이 아니다.**
+- 플랫폼 장애가 CakeShop 의 기존 로그인·주문·결제·취소를 막지 않는다(`T-14`).
+
+### 4.4 아직 확정하지 않은 것
+
+- **인증 헤더** — 서비스 간 인증 방식과 토큰·서명 헤더.
+- CakeShop 실제 이벤트 종류 · 원천 ID · 발행 훅은 P1 · P2 · P5 가
+  기존 코드와 대조해 확정한다.
 
 ---
 
@@ -194,7 +230,8 @@ IP 를 지역 이름으로 바꾸려면 GeoIP 데이터베이스가 필요하다
 - [x] **D-3**(공통 필드 타입) — [공통 필드](common-fields.md) 로 확정
 - [ ] 로그인 실패 시 식별자를 그대로 보낼지 해시로 보낼지 — P1 · P2 (3.5)
 - [ ] CakeShop 에 `outbound_event` 테이블과 리스너·전송 작업 구현 — P1
-- [ ] HTTP 경로 · 요청/응답 필드 · 인증 헤더를 이 문서에 추가한다
+- [x] HTTP 경로 · 요청/응답 필드를 이 문서에 추가 (4절)
+- [ ] 서비스 간 **인증 헤더** 확정 — P1
 
 조사 근거는 CakeShop `dev` 브랜치 기준이다. 재확인은
 [team-sweethan/cakeshop](https://github.com/team-sweethan/cakeshop) 에서 한다.

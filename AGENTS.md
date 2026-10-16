@@ -49,6 +49,15 @@ P4 는 `ai-server/` 전체를 담당한다.
    `settlement.internal.SourceEventListener` 가 동시에 있으면 앱이 뜨지 않는다.
    역할이 드러나는 이름을 쓴다 — `AlertDetectionListener`, `TransactionProjectionListener`.
 
+## 번호를 쓸 때
+
+C-xx(계약) · T-xx(테스트) · D-x(결정 대기) · ADR-xxx · FIX-xx 같은 번호는
+**처음 나올 때 한 번 풀어서 적는다.** 읽는 사람이 번호를 외우고 있다고 가정하지 않는다.
+
+> C-03 → "C-03(경보를 사건으로 넘기는 약속)"
+
+번호 체계 전체는 [contracts/README.md](contracts/README.md#번호가-무슨-뜻인가) 에 있다.
+
 ## 자주 걸리는 함정
 
 - **로컬 PostgreSQL 과 포트 충돌.** PC 에 PostgreSQL 을 설치해 둔 사람은 5432 가 이미

@@ -31,6 +31,22 @@ cd backend
 
 테스트는 DB 없이도 돈다. 모듈 경계 검사는 Spring 컨텍스트를 띄우지 않기 때문이다.
 
+## CakeShop 과 함께 띄우기
+
+**개발 대부분은 CakeShop 없이 한다.** 이벤트를 `curl` 로 직접 쏘면 되기 때문이다.
+실제로 CakeShop 을 띄워야 하는 때는 두 번뿐이다 — CakeShop 쪽 전송 코드를 고칠 때와,
+최종 시연 때.
+
+| | 이쪽 플랫폼 | CakeShop |
+|---|---|---|
+| 포트 | **8081** | 8080 |
+| DB | PostgreSQL 17 (컨테이너, 호스트 **5433**) | MariaDB (로컬 설치, **3307**) |
+| 실행 | `docker compose up -d` 후 `./gradlew bootRun` | `.env` 채우고 `./gradlew bootRun` |
+
+겹치는 포트가 없도록 양쪽 기본값을 미리 비켜 뒀다. CakeShop 을 띄우려면
+Toss 테스트 키와 메일·S3 설정이 담긴 `.env` 가 필요하다.
+[cakeshop 저장소](https://github.com/team-sweethan/cakeshop)의 `.env_sample` 참고.
+
 ## 모듈 경계
 
 | 모듈 | 담당 | 의존 |
